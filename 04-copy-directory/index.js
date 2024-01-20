@@ -10,7 +10,7 @@ rm(directoryDst, {recursive: true, force: true})
       .then(
         readdir(directorySrc, {withFileTypes: true})
           .then(files => files.forEach(file =>{
-            if(file.isFile) {
+            if(file.isFile()) {
               const fileSrc = path.join(file.path, file.name);
               const fileDst = path.join(directoryDst, file.name);
               copyFile(fileSrc, fileDst)
