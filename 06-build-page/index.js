@@ -21,7 +21,7 @@ const copyFiles = async (src, dst) => {
     } else {
       const nestedDst = path.join(dst, file.name);
       const nestedSrc = path.join(src, file.name);
-      copyFiles(nestedSrc, nestedDst)
+      copyFiles(nestedSrc, nestedDst);
     }
   })
 }
@@ -30,12 +30,24 @@ const buildPage = async() => {
   await fsPromises.rm(directoryDst, {recursive: true, force: true});
   await fsPromises.mkdir(directoryDst, {recursive: true});
 
-  //copy assets
+  // copy assets
   const src = path.join(directorySrc, assetsDir);
   const dst = path.join(directoryDst, assetsDir);
   copyFiles(src, dst);
 
-
+  // create css
+  const srcCss = path.join(directorySrc, 'styles')
+  const files =  await fsPromises.readdir(srcCss, {withFileTypes: true});
+  const cssFiles = [];
+  const wsCss = createWriteStream(path.join(directoryDst, styleFile));
+  files.forEach(file => {
+    console.log(file.name, 'merged');
+    const srcFile = path.join(file.path, file.name);
+    if(file.isFile() && path.extname(srcFile) === '.css') {
+     cssFiles.push(srcFile);
+     createReadStream(srcFile).pipe(wsCss);
+    }
+  })
 }
 
 buildPage()
