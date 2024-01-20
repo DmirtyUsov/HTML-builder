@@ -12,7 +12,7 @@ const createBundle = async () => {
   const writeStream = createWriteStream(fileDst);
   files.forEach(file => {
     const srcFile = path.join(file.path, file.name);
-    if(file.isFile && path.extname(srcFile) === '.css') {
+    if(file.isFile() && path.extname(srcFile) === '.css') {
       cssFiles.push(srcFile);
     }
   })
