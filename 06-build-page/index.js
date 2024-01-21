@@ -41,13 +41,34 @@ const buildPage = async() => {
   const cssFiles = [];
   const wsCss = createWriteStream(path.join(directoryDst, styleFile));
   files.forEach(file => {
-    console.log(file.name, 'merged');
     const srcFile = path.join(file.path, file.name);
     if(file.isFile() && path.extname(srcFile) === '.css') {
      cssFiles.push(srcFile);
      createReadStream(srcFile).pipe(wsCss);
+     console.log(file.name, 'merged');
     }
   })
-}
 
+  // create index.html
+  const template = await fsPromises
+    .readFile(path.join(directorySrc, 'template.html'), {encoding: "utf-8"});
+
+  const components = {};
+  const srcComponents = path.join(directorySrc, 'components');
+  const componentFiles =  await fsPromises
+    .readdir(srcComponents, {withFileTypes: true});
+  for (const file of componentFiles) {
+    const srcFile = path.join(file.path, file.name);
+    if(file.isFile() && path.extname(srcFile) === '.html') {
+      components[path.parse(srcFile).name] = await fsPromises
+        .readFile(srcFile, {encoding: "utf-8"});
+    }
+  }
+
+  const pattern = /{{(\w*)}}/g;
+  const indexhtml = template.replace(pattern, (_, token) => components[token] || '');
+  await fsPromises.writeFile(path.join(directoryDst, indexFile), indexhtml);
+  console.log('\nindex.html created');
+
+}
 buildPage()
